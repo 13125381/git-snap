@@ -30,10 +30,24 @@ void setup() {
   Serial.begin(9600);
   lcd.begin(16, 2);
   lcd.print("Git snap started");
+  if(Serial) {
+     Serial.println("0\n");
+  }
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  Serial.println("hi from arduino\n");
+  delay(1000);
+  
+  if(Serial.available()) {
+    Serial.println("available");
+    lcd.clear();
+    String message = Serial.readStringUntil('\n');
+    lcd.print(message);
+    delay(3000);
+  }
+  
   /*if (message.length() > 0) {
     lcd.clear();
     lcd.setCursor(0, 0);

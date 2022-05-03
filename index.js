@@ -1,77 +1,68 @@
 const { SerialPort, ReadlineParser } = require('serialport');
 const process = require('process');
+const EventEmitter = require('events');
+
 process.stdin.resume();
 
 /**
- * 0 - generic message
+ * 0 - arduino is ready
  * 1 - commit event
  * 
  */
 
-// const serialPort = new SerialPort({
-//     path: '/dev/cu.usbmodem143301',
-//     baudRate: 9600,
-//     endOnClose: true
-// });
+let arduinoInitialized = false;
 
-const initParser = () => {
-    const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
-    parser.on('data', (message) => {
-        if (message.startsWith(0)) {
-            console.log('Received message: ', message);
-        }
+const serialPort = new SerialPort({
+    path: '/dev/cu.usbmodem143201', //'/dev/cu.usbmodem143301',
+    baudRate: 9600,
+    endOnClose: true
+});
 
-        if (message.startsWith(1)) {
-            console.log('Received commit event');
-            // call commit functions
-        }
-    });
 
-    // serialPort.on('open', () => {
-    //     console.log('port is open')
-    //     serialPort.write('Hello from mac\n', (error, results) => {
-    //         console.log('data: ', error);
-    //         console.log('results: ', results)
-    //     });
-    // });
 
-    // serialPort.on('error', (error) => {
-    //     console.log('Error: ', error);
-    // })
+const waitForArduino = async () => {
+    if (!arduinoInitialized) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        await waitForArduino();
+    }
 }
 
-const writeToPort = (data) => {
-    serialPort.write(data, 'utf8', (error, results) => {
-        console.log('data: ', error);
-        console.log('results: ', results)
+const writeData = (message) => {
+    console.log('writing data')
+    serialPort.write(message);
+    serialPort.drain(() => {
+        console.log('done')
     });
-};
+}
 
+(async () => {
 
-
-(() => {
-    const serialPort = new SerialPort({
-        path: '/dev/cu.usbmodem143201', //'/dev/cu.usbmodem143301',
-        baudRate: 9600,
-        endOnClose: true
-    });
-    
     try {
+
         const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
         parser.on('data', (message) => {
             console.log(message)
             if (message.startsWith(0)) {
-                console.log('Received message: ', message);
+                console.log('Arduino has been initialized');
+                arduinoInitialized = true;
             }
-    
+
             if (message.startsWith(1)) {
                 console.log('Received commit event');
-                // call commit functions
             }
         });
-        
+
+
+        serialPort.on('error', (error) => {
+            console.log(error);
+        })
+
+        await waitForArduino();
+        writeData('hello\n');
+
     } catch (e) {
         console.log(e);
         serialPort.close();
     }
 })();
+
