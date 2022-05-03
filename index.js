@@ -1,16 +1,15 @@
 const { SerialPort, ReadlineParser } = require('serialport');
 const process = require('process');
 const EventEmitter = require('events');
+const arduinoInitializeState = new EventEmitter();
 
 process.stdin.resume();
 
 /**
  * 0 - arduino is ready
- * 1 - commit event
- * 
+ * 1 - commit and push event
+ * 2 - info
  */
-
-let arduinoInitialized = false;
 
 const serialPort = new SerialPort({
     path: '/dev/cu.usbmodem143201', //'/dev/cu.usbmodem143301',
@@ -18,50 +17,48 @@ const serialPort = new SerialPort({
     endOnClose: true
 });
 
-
-
 const waitForArduino = async () => {
-    if (!arduinoInitialized) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        await waitForArduino();
-    }
+    await new Promise(resolve => arduinoInitializeState.once('ready', resolve));
 }
 
 const writeData = (message) => {
-    console.log('writing data')
-    serialPort.write(message);
-    serialPort.drain(() => {
-        console.log('done')
-    });
+    serialPort.write(`${message}\n`);
+    serialPort.drain();
 }
+
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
+parser.on('data', (message) => {
+    const eventCode = message.charAt(0);
+    switch (eventCode) {
+        case 0:
+            console.log('Arduino has been initialized');
+            arduinoInitializeState.emit('ready');
+            break;
+        case 1:
+            console.log('Received commit event');
+            break;
+        case 2:
+            console.log('Received info event');
+            break;
+        default:
+            break;
+    }
+});
+
+serialPort.on('error', (error) => {
+    console.error(error);
+    serialPort.close();
+    process.exit = 1;
+});
 
 (async () => {
 
     try {
-
-        const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
-        parser.on('data', (message) => {
-            console.log(message)
-            if (message.startsWith(0)) {
-                console.log('Arduino has been initialized');
-                arduinoInitialized = true;
-            }
-
-            if (message.startsWith(1)) {
-                console.log('Received commit event');
-            }
-        });
-
-
-        serialPort.on('error', (error) => {
-            console.log(error);
-        })
-
         await waitForArduino();
-        writeData('hello\n');
+        writeData('hello');
 
     } catch (e) {
-        console.log(e);
+        console.error(e);
         serialPort.close();
     }
 })();
