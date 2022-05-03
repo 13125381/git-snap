@@ -8,14 +8,14 @@ void setup() {
   lcd.begin(16, 2);
   lcd.print("Git snap started");
   if(Serial) {
-     Serial.println("0");
+     Serial.println("[READY]");
   }
 }
 
 // the loop function runs over and over again forever
 void loop() {
   if(Serial.available()) {
-    Serial.println("Message recieved");
+    Serial.println("[INFO] Message recieved");
     lcd.clear();
     String message = Serial.readStringUntil('\n');
     lcd.print(message);

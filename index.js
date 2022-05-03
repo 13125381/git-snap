@@ -3,13 +3,13 @@ const process = require('process');
 const EventEmitter = require('events');
 const arduinoInitializeState = new EventEmitter();
 
-process.stdin.resume();
 
 /**
- * 0 - arduino is ready
- * 1 - commit and push event
- * 2 - info
+ * READY - arduino is ready
+ * COMMITPUSH - commit and push event
+ * INFO - info
  */
+
 
 const serialPort = new SerialPort({
     path: '/dev/cu.usbmodem143201', //'/dev/cu.usbmodem143301',
@@ -26,18 +26,19 @@ const writeData = (message) => {
     serialPort.drain();
 }
 
-const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\n' }));
+const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 parser.on('data', (message) => {
-    const eventCode = message.charAt(0);
+    // get event code from between square brackets
+    const eventCode = message.match(/[^\[\]]+/gm)[0];
     switch (eventCode) {
-        case 0:
+        case 'READY':
             console.log('Arduino has been initialized');
             arduinoInitializeState.emit('ready');
             break;
-        case 1:
+        case 'COMMIT':
             console.log('Received commit event');
             break;
-        case 2:
+        case 'INFO':
             console.log('Received info event');
             break;
         default:
