@@ -21,23 +21,4 @@ void loop() {
     lcd.print(message);
     delay(3000);
   }
-  
-  /*if (message.length() > 0) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Status:");
-    lcd.setCursor(0, 1);
-    lcd.print(message);
-    Serial.write("0 Received message");
-  }*/
-  
-  
- 
- /* Serial.write("Light on\n");
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(3000);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  Serial.write("Light off\n");
-  delay(1000);                       // wait for a second
-*/
 }
