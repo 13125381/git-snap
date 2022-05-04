@@ -28,7 +28,7 @@ export const commitPush = async () => {
 };
 
 const buildCommitMessage = (status) => {
-    const date = new Date().toLocaleString('en-GB');
+    const date = new Date().toString();
     let commitMessage = `Changes - ${date}\n`;
     status.modified.forEach((fileName) => {
         commitMessage += `[MODIFIED] ${fileName}\n`
