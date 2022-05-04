@@ -35,14 +35,18 @@ void loop() {
     if (message == "[SUCCESS]") {
       lcd.print("Done");
       isComitting = false;
-      delay(3000);
+      delay(2000);
       lcd.clear();
       lcd.print("Waiting for snap");
     }else if (message == "[INPROGRESS]") {
       lcd.clear();
       lcd.print("Comitting...");
       delay(3000);
-    } 
+    } else if (message == "[NOCHANGES]") {
+      lcd.clear();
+      lcd.print("No changes");
+      delay(3000);
+    }
     else {
       lcd.print(message);
       delay(3000);
