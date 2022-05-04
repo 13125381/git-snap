@@ -1,18 +1,28 @@
-const { SerialPort, ReadlineParser } = require('serialport');
-const process = require('process');
-const EventEmitter = require('events');
+import process from 'process';
+import { SerialPort, ReadlineParser } from 'serialport';
+import { commit } from './gitUtils.js';
+import EventEmitter from 'events';
 const arduinoInitializeState = new EventEmitter();
+const commitEvent = new EventEmitter();
+
+const eventCodes = {
+    SUCCESS: '[SUCCESS]',
+    COMMITPUSH: '[COMMITPUSH]',
+    INFO: '[INFO]',
+    READY: '[READY]',
+    INPROGRESS: '[INPROGRESS]'
+};
 
 
-/**
- * READY - arduino is ready
- * COMMITPUSH - commit and push event
- * INFO - info
- */
+commitEvent.on(eventCodes.COMMITPUSH, async () => {
+    await writeData(eventCodes.INPROGRESS);
+    await commit();
+    await writeData(eventCodes.SUCCESS);
+});
 
 
 const serialPort = new SerialPort({
-    path: '/dev/cu.usbmodem143201', //'/dev/cu.usbmodem143301',
+    path: '/dev/cu.usbmodem143201',
     baudRate: 9600,
     endOnClose: true
 });
@@ -22,24 +32,30 @@ const waitForArduino = async () => {
 }
 
 const writeData = (message) => {
-    serialPort.write(`${message}\n`);
-    serialPort.drain();
+    return new Promise((resolve) => {
+        serialPort.write(`${message}\n`);
+        serialPort.drain(() => {
+            resolve();
+        });
+    });
 }
 
 const parser = serialPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 parser.on('data', (message) => {
-    // get event code from between square brackets
-    const eventCode = message.match(/[^\[\]]+/gm)[0];
+    console.log(message)
+    const eventCode = message.match(/^\[.*\]/gm)[0];
     switch (eventCode) {
-        case 'READY':
+        case eventCodes.READY:
             console.log('Arduino has been initialized');
             arduinoInitializeState.emit('ready');
             break;
-        case 'COMMIT':
+        case eventCodes.COMMITPUSH:
             console.log('Received commit event');
+            commitEvent.emit(eventCodes.COMMITPUSH);
             break;
-        case 'INFO':
+        case eventCodes.INFO:
             console.log('Received info event');
+            console.log(message);
             break;
         default:
             break;
@@ -56,7 +72,6 @@ serialPort.on('error', (error) => {
 
     try {
         await waitForArduino();
-        writeData('hello');
 
     } catch (e) {
         console.error(e);
