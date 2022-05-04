@@ -23,7 +23,6 @@ export const commit = async () => {
     status = await git.status();
     const message = buildCommitMessage(status);
     await git.commit(message);
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
     return resultCodes.SUCCESS;
 };
 
@@ -33,10 +32,11 @@ export const push = async () => {
 
 const stageFiles = async (files) => {
     await git.add(files);
-}
+};
 
 const buildCommitMessage = (status) => {
-    let commitMessage = `Changes [${new Date().toISOString()}]\n`;
+    const date = new Date().toLocaleString('en-GB', { timeZone: 'UTC' });
+    let commitMessage = `Changes - ${date}\n`;
     status.modified.forEach((fileName) => {
         commitMessage += `[MODIFIED] ${fileName}\n`
     });
