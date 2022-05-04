@@ -36,7 +36,7 @@ const stageFiles = async (files) => {
 }
 
 const buildCommitMessage = (status) => {
-    let commitMessage = `Changes [${new Date().toISOString()}]`;
+    let commitMessage = `Changes [${new Date().toISOString()}]\n`;
     status.modified.forEach((fileName) => {
         commitMessage += `[MODIFIED] ${fileName}\n`
     });
