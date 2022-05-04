@@ -27,12 +27,16 @@ export const commit = async () => {
     return resultCodes.SUCCESS;
 };
 
+export const push = async () => {
+    await git.push();
+};
+
 const stageFiles = async (files) => {
     await git.add(files);
 }
 
 const buildCommitMessage = (status) => {
-    let commitMessage = '';
+    let commitMessage = `Changes [${new Date().toISOString()}]`;
     status.modified.forEach((fileName) => {
         commitMessage += `[MODIFIED] ${fileName}\n`
     });
