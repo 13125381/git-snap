@@ -28,7 +28,7 @@ export const commitPush = async () => {
 };
 
 const buildCommitMessage = (status) => {
-    const date = new Date().toLocaleString('en-GB', { timeZone: 'UTC' });
+    const date = new Date().toLocaleString('en-GB');
     let commitMessage = `Changes - ${date}\n`;
     status.modified.forEach((fileName) => {
         commitMessage += `[MODIFIED] ${fileName}\n`
