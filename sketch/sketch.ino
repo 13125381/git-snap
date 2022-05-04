@@ -40,7 +40,10 @@ void loop() {
       lcd.print("Waiting for snap");
     }else if (message == "[INPROGRESS]") {
       lcd.clear();
-      lcd.print("Comitting...");
+      lcd.print(" Comitting and  ");
+      lcd.setCursor(0, 1);
+      lcd.print("  pushing...  ");
+      lcd.setCursor(0, 1);
       delay(3000);
     } else if (message == "[NOCHANGES]") {
       lcd.clear();
