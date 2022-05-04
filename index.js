@@ -30,8 +30,6 @@ commitEvent.on(eventCodes.COMMITPUSH, async () => {
     }
 });
 
-console.log('changes')
-
 const serialPort = new SerialPort({
     path: '/dev/cu.usbmodem143201',
     baudRate: 9600,
@@ -80,7 +78,6 @@ serialPort.on('error', (error) => {
 });
 
 (async () => {
-
     try {
         await waitForArduino();
 
