@@ -48,9 +48,11 @@ void loop() {
     } else if (message == "[NOCHANGES]") {
       lcd.clear();
       lcd.print("No changes");
-      delay(3000);
-    }
-    else {
+      isComitting = false;
+      delay(2000);
+      lcd.clear();
+      lcd.print("Waiting for snap");
+    } else {
       lcd.print(message);
       delay(3000);
     }
